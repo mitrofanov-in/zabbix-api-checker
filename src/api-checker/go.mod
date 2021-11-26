@@ -1,4 +1,4 @@
-module cmd
+module api-checker
 
 go 1.17
 
