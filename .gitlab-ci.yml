@@ -1,0 +1,29 @@
+image: docker:latest
+services:
+  - docker:dind
+
+stages:
+  - build-docker-image
+  - deploy-container
+
+build-docker-image:
+  stage: build-docker-image
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+  tags:
+    - xco-awx
+  script:
+    - docker login -u admin -p ${REGISTRY_PASSWORD} http://${REGISTRY}
+    - docker image build . -f Dockerfile -t ${REGISTRY}/api-checker/api-checker:prod-$CI_PIPELINE_ID
+
+deploy-container:
+  stage: deploy-container
+  rules:
+    - if: $CI_COMMIT_BRANCH == "master"
+  tags:
+    - xco-awx
+  script:
+    - docker rm -f go-checker
+    - docker run --restart=always -d --name go-checker -p 8080:8080 ${REGISTRY}/api-checker/api-checker:prod-$CI_PIPELINE_ID
+
+
