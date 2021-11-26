@@ -13,6 +13,6 @@ import (
 func GoDotEnvVariable(key string) string {
 
 	// load .env file
-godotenv.Load("C:/Users/user/Documents/.env")
+godotenv.Load("/app/.env")
 	return os.Getenv(key)
 }
