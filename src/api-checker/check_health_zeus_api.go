@@ -18,6 +18,35 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
+var bodyStatus int = 0
+
+func HttpQueryGet(url string) string {
+	client := &http.Client{
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
+		}}
+	req_podft, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		panic(err)
+	}
+	for i := range cookie {
+		req_podft.AddCookie(cookie[i])
+	}
+	resp_podft, err := client.Do(req_podft)
+	if err != nil {
+		panic(err)
+	}
+	defer resp_podft.Body.Close()
+
+	body_podft, err := ioutil.ReadAll(resp_podft.Body)
+	if err != nil {
+		panic(err)
+	}
+	bodyStatus = resp_podft.StatusCode
+
+	return string(body_podft)
+}
+
 type Query struct {
 	User User `json:"user"`
 }
@@ -66,6 +95,7 @@ func main() {
 		}}
 
 	/// FIRST REQUEST ///
+	fmt.Println(HttpQueryGet(urlPodft))
 
 	mux := http.NewServeMux()
 
@@ -96,30 +126,52 @@ func main() {
 		}
 
 	})
+	//	mux.HandleFunc("/podft", GetTest)
+
+	/*
+		mux.HandleFunc("/podft", func(writer http.ResponseWriter, request *http.Request) {
+
+			req_podft, err := http.NewRequest("GET", urlPodft, nil)
+			if err != nil {
+				panic(err)
+			}
+			for i := range cookie {
+				req_podft.AddCookie(cookie[i])
+			}
+			resp_podft, err := client.Do(req_podft)
+			if err != nil {
+				panic(err)
+			}
+			defer resp_podft.Body.Close()
+
+			body_podft, err := ioutil.ReadAll(resp_podft.Body)
+			if err != nil {
+				panic(err)
+			}
+			bodyStatus_podft := resp_podft.StatusCode
+
+			var m map[string]interface{}
+			body_s := string(body_podft)
+			json.Unmarshal([]byte(body_s), &m)
+
+			if bodyStatus_podft == 200 {
+				f := m["data"]
+				j := f.(map[string]interface{})
+				if j["id"] != "" && j["type"] != "" {
+					io.WriteString(writer, "1")
+				}
+			} else {
+				io.WriteString(writer, "0")
+			}
+		})
+	*/
 
 	mux.HandleFunc("/podft", func(writer http.ResponseWriter, request *http.Request) {
 
-		req_podft, err := http.NewRequest("GET", urlPodft, nil)
-		if err != nil {
-			panic(err)
-		}
-		for i := range cookie {
-			req_podft.AddCookie(cookie[i])
-		}
-		resp_podft, err := client.Do(req_podft)
-		if err != nil {
-			panic(err)
-		}
-		defer resp_podft.Body.Close()
-
-		body_podft, err := ioutil.ReadAll(resp_podft.Body)
-		if err != nil {
-			panic(err)
-		}
-		bodyStatus_podft := resp_podft.StatusCode
+		body_s := HttpQueryGet(urlPodft)
+		bodyStatus_podft := bodyStatus
 
 		var m map[string]interface{}
-		body_s := string(body_podft)
 		json.Unmarshal([]byte(body_s), &m)
 
 		if bodyStatus_podft == 200 {
@@ -136,50 +188,46 @@ func main() {
 	mux.HandleFunc("/time", func(writer http.ResponseWriter, request *http.Request) {
 
 		start := time.Now()
-		req_podft, err := http.NewRequest("GET", urlPodft, nil)
-		if err != nil {
-			panic(err)
-		}
-
-		for i := range cookie {
-			req_podft.AddCookie(cookie[i])
-		}
-		resp_podft, err := client.Do(req_podft)
-		if err != nil {
-			panic(err)
-		}
-
-		defer resp_podft.Body.Close()
-
+		getTime := HttpQueryGet(urlPodft)
+		fmt.Println(getTime)
 		elapsed := time.Since(start).Seconds()
 		elapsed_int := elapsed * 1000
 		elapsed_str := strconv.FormatFloat(elapsed_int, 'f', -1, 64)
 		io.WriteString(writer, elapsed_str)
 	})
 
+	/*
+		mux.HandleFunc("/time", func(writer http.ResponseWriter, request *http.Request) {
+
+			start := time.Now()
+			req_podft, err := http.NewRequest("GET", urlPodft, nil)
+			if err != nil {
+				panic(err)
+			}
+
+			for i := range cookie {
+				req_podft.AddCookie(cookie[i])
+			}
+			resp_podft, err := client.Do(req_podft)
+			if err != nil {
+				panic(err)
+			}
+
+			defer resp_podft.Body.Close()
+
+			elapsed := time.Since(start).Seconds()
+			elapsed_int := elapsed * 1000
+			elapsed_str := strconv.FormatFloat(elapsed_int, 'f', -1, 64)
+			io.WriteString(writer, elapsed_str)
+		})
+	*/
+
 	mux.HandleFunc("/query-tasks", func(writer http.ResponseWriter, request *http.Request) {
 
-		req_stat, err := http.NewRequest("GET", urlStat, nil)
-		if err != nil {
-			panic(err)
-		}
-		for i := range cookie {
-			req_stat.AddCookie(cookie[i])
-		}
-		resp_stat, err := client.Do(req_stat)
-		if err != nil {
-			panic(err)
-		}
-		defer resp_stat.Body.Close()
-
-		body_stat, err := ioutil.ReadAll(resp_stat.Body)
-		if err != nil {
-			panic(err)
-		}
-		bodyStatus_stat := resp_stat.StatusCode
+		body_s := HttpQueryGet(urlStat)
+		bodyStatus_stat := bodyStatus
 
 		var m map[string]interface{}
-		body_s := string(body_stat)
 		json.Unmarshal([]byte(body_s), &m)
 
 		if bodyStatus_stat == 200 {
@@ -196,27 +244,10 @@ func main() {
 
 	mux.HandleFunc("/total-tasks", func(writer http.ResponseWriter, request *http.Request) {
 
-		req_stat, err := http.NewRequest("GET", urlStat, nil)
-		if err != nil {
-			panic(err)
-		}
-		for i := range cookie {
-			req_stat.AddCookie(cookie[i])
-		}
-		resp_stat, err := client.Do(req_stat)
-		if err != nil {
-			panic(err)
-		}
-		defer resp_stat.Body.Close()
-
-		body_stat, err := ioutil.ReadAll(resp_stat.Body)
-		if err != nil {
-			panic(err)
-		}
-		bodyStatus_stat := resp_stat.StatusCode
+		body_s := HttpQueryGet(urlStat)
+		bodyStatus_stat := bodyStatus
 
 		var m map[string]interface{}
-		body_s := string(body_stat)
 		json.Unmarshal([]byte(body_s), &m)
 
 		if bodyStatus_stat == 200 {
@@ -232,27 +263,10 @@ func main() {
 
 	mux.HandleFunc("/batch", func(writer http.ResponseWriter, request *http.Request) {
 
-		req_stat, err := http.NewRequest("GET", urlStat, nil)
-		if err != nil {
-			panic(err)
-		}
-		for i := range cookie {
-			req_stat.AddCookie(cookie[i])
-		}
-		resp_stat, err := client.Do(req_stat)
-		if err != nil {
-			panic(err)
-		}
-		defer resp_stat.Body.Close()
-
-		body_stat, err := ioutil.ReadAll(resp_stat.Body)
-		if err != nil {
-			panic(err)
-		}
-		bodyStatus_stat := resp_stat.StatusCode
+		body_s := HttpQueryGet(urlStat)
+		bodyStatus_stat := bodyStatus
 
 		var m map[string]interface{}
-		body_s := string(body_stat)
 		json.Unmarshal([]byte(body_s), &m)
 
 		if bodyStatus_stat == 200 {
@@ -296,27 +310,10 @@ func main() {
 
 	mux.HandleFunc("/query-users", func(writer http.ResponseWriter, request *http.Request) {
 
-		req_stat, err := http.NewRequest("GET", urlStat, nil)
-		if err != nil {
-			panic(err)
-		}
-		for i := range cookie {
-			req_stat.AddCookie(cookie[i])
-		}
-		resp_stat, err := client.Do(req_stat)
-		if err != nil {
-			panic(err)
-		}
-		defer resp_stat.Body.Close()
-
-		body_stat, err := ioutil.ReadAll(resp_stat.Body)
-		if err != nil {
-			panic(err)
-		}
-		bodyStatus_stat := resp_stat.StatusCode
+		body_s := HttpQueryGet(urlStat)
+		bodyStatus_stat := bodyStatus
 
 		var m map[string]interface{}
-		body_s := string(body_stat)
 		json.Unmarshal([]byte(body_s), &m)
 
 		if bodyStatus_stat == 200 {
@@ -335,28 +332,10 @@ func main() {
 
 	mux.HandleFunc("/total-users", func(writer http.ResponseWriter, request *http.Request) {
 
-		req_query_t, err := http.NewRequest("GET", urlStat, nil)
-		if err != nil {
-			panic(err)
-		}
-		for i := range cookie {
-			req_query_t.AddCookie(cookie[i])
-		}
-		resp_query_t, err := client.Do(req_query_t)
-		if err != nil {
-			panic(err)
-		}
-		defer resp_query_t.Body.Close()
-
-		body_query_t, err := ioutil.ReadAll(resp_query_t.Body)
-		if err != nil {
-			panic(err)
-		}
-		bodyStatus_query_t := resp_query_t.StatusCode
-		//    fmt.Printf("%+v\n", string(body_query_t),bodyStatus_query_t)
+		body_s := HttpQueryGet(urlStat)
+		bodyStatus_query_t := bodyStatus
 
 		var m map[string]interface{}
-		body_s := string(body_query_t)
 		json.Unmarshal([]byte(body_s), &m)
 
 		if bodyStatus_query_t == 200 {
@@ -383,27 +362,10 @@ func main() {
 
 	mux.HandleFunc("/collect", func(writer http.ResponseWriter, request *http.Request) {
 
-		req_stat, err := http.NewRequest("GET", urlStat, nil)
-		if err != nil {
-			panic(err)
-		}
-		for i := range cookie {
-			req_stat.AddCookie(cookie[i])
-		}
-		resp_stat, err := client.Do(req_stat)
-		if err != nil {
-			panic(err)
-		}
-		defer resp_stat.Body.Close()
-
-		body_stat, err := ioutil.ReadAll(resp_stat.Body)
-		if err != nil {
-			panic(err)
-		}
-		bodyStatus_stat := resp_stat.StatusCode
+		body_s := HttpQueryGet(urlStat)
+		bodyStatus_stat := bodyStatus
 
 		var m map[string]interface{}
-		body_s := string(body_stat)
 		json.Unmarshal([]byte(body_s), &m)
 
 		if bodyStatus_stat == 200 {
@@ -454,3 +416,4 @@ func main() {
 
 	http.ListenAndServe(":8080", mux)
 }
+
