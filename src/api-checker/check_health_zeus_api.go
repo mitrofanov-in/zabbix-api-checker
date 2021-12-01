@@ -1,7 +1,7 @@
 package main
 
 import (
-	"bytes"
+	"auth"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -89,42 +89,63 @@ func main() {
 	jsonData, _ := json.Marshal(lgn_struct)
 	jsonStr := []byte(jsonData)
 
-	client := &http.Client{
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			return http.ErrUseLastResponse
-		}}
-
+	/*
+		client := &http.Client{
+			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				return http.ErrUseLastResponse
+			}}
+	*/
 	/// FIRST REQUEST ///
 	fmt.Println(HttpQueryGet(urlPodft))
 
 	mux := http.NewServeMux()
 
+	/*
+		mux.HandleFunc("/login", func(writer http.ResponseWriter, request *http.Request) {
+
+			req_lgn, _ := http.NewRequest("POST", urlLogin, bytes.NewBuffer(jsonStr))
+			req_lgn.Header.Set("Content-Type", "application/json")
+			resp_lgn, err := client.Do(req_lgn)
+			if err != nil {
+				panic(err)
+			}
+			cookie = resp_lgn.Cookies()
+
+			for _, c := range cookie {
+				fmt.Println(c.Name, c.Value)
+			}
+
+			defer resp_lgn.Body.Close()
+
+			body_lgn, _ := ioutil.ReadAll(resp_lgn.Body)
+			bodyStatus_lgn := resp_lgn.StatusCode
+			fmt.Printf("%+v\n", string(body_lgn))
+
+			if bodyStatus_lgn == 201 {
+				io.WriteString(writer, "1")
+			} else {
+				io.WriteString(writer, "0")
+			}
+
+		})
+	*/
+
 	mux.HandleFunc("/login", func(writer http.ResponseWriter, request *http.Request) {
 
-		req_lgn, _ := http.NewRequest("POST", urlLogin, bytes.NewBuffer(jsonStr))
-		req_lgn.Header.Set("Content-Type", "application/json")
-		resp_lgn, err := client.Do(req_lgn)
-		if err != nil {
-			panic(err)
-		}
-		cookie = resp_lgn.Cookies()
+		cookie = auth.HttpQueryPost(urlLogin, jsonStr)
+		var c_name string
 
 		for _, c := range cookie {
-			fmt.Println(c.Name, c.Value)
+			if c.Name == "usid" {
+				c_name = c.Name
+			}
 		}
 
-		defer resp_lgn.Body.Close()
-
-		body_lgn, _ := ioutil.ReadAll(resp_lgn.Body)
-		bodyStatus_lgn := resp_lgn.StatusCode
-		fmt.Printf("%+v\n", string(body_lgn))
-
-		if bodyStatus_lgn == 201 {
+		if c_name == "usid" {
 			io.WriteString(writer, "1")
 		} else {
 			io.WriteString(writer, "0")
 		}
-
 	})
 
 	mux.HandleFunc("/podft", func(writer http.ResponseWriter, request *http.Request) {
