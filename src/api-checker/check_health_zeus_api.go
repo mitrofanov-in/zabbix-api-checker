@@ -101,7 +101,7 @@ func main() {
 
 	mux.HandleFunc("/login", func(writer http.ResponseWriter, request *http.Request) {
 
-		req_lgn, err := http.NewRequest("POST", urlLogin, bytes.NewBuffer(jsonStr))
+		req_lgn, _ := http.NewRequest("POST", urlLogin, bytes.NewBuffer(jsonStr))
 		req_lgn.Header.Set("Content-Type", "application/json")
 		resp_lgn, err := client.Do(req_lgn)
 		if err != nil {
@@ -117,7 +117,7 @@ func main() {
 
 		body_lgn, _ := ioutil.ReadAll(resp_lgn.Body)
 		bodyStatus_lgn := resp_lgn.StatusCode
-		fmt.Printf("%+v\n", string(body_lgn), bodyStatus_lgn)
+		fmt.Printf("%+v\n", string(body_lgn))
 
 		if bodyStatus_lgn == 201 {
 			io.WriteString(writer, "1")
@@ -126,45 +126,6 @@ func main() {
 		}
 
 	})
-	//	mux.HandleFunc("/podft", GetTest)
-
-	/*
-		mux.HandleFunc("/podft", func(writer http.ResponseWriter, request *http.Request) {
-
-			req_podft, err := http.NewRequest("GET", urlPodft, nil)
-			if err != nil {
-				panic(err)
-			}
-			for i := range cookie {
-				req_podft.AddCookie(cookie[i])
-			}
-			resp_podft, err := client.Do(req_podft)
-			if err != nil {
-				panic(err)
-			}
-			defer resp_podft.Body.Close()
-
-			body_podft, err := ioutil.ReadAll(resp_podft.Body)
-			if err != nil {
-				panic(err)
-			}
-			bodyStatus_podft := resp_podft.StatusCode
-
-			var m map[string]interface{}
-			body_s := string(body_podft)
-			json.Unmarshal([]byte(body_s), &m)
-
-			if bodyStatus_podft == 200 {
-				f := m["data"]
-				j := f.(map[string]interface{})
-				if j["id"] != "" && j["type"] != "" {
-					io.WriteString(writer, "1")
-				}
-			} else {
-				io.WriteString(writer, "0")
-			}
-		})
-	*/
 
 	mux.HandleFunc("/podft", func(writer http.ResponseWriter, request *http.Request) {
 
@@ -195,32 +156,6 @@ func main() {
 		elapsed_str := strconv.FormatFloat(elapsed_int, 'f', -1, 64)
 		io.WriteString(writer, elapsed_str)
 	})
-
-	/*
-		mux.HandleFunc("/time", func(writer http.ResponseWriter, request *http.Request) {
-
-			start := time.Now()
-			req_podft, err := http.NewRequest("GET", urlPodft, nil)
-			if err != nil {
-				panic(err)
-			}
-
-			for i := range cookie {
-				req_podft.AddCookie(cookie[i])
-			}
-			resp_podft, err := client.Do(req_podft)
-			if err != nil {
-				panic(err)
-			}
-
-			defer resp_podft.Body.Close()
-
-			elapsed := time.Since(start).Seconds()
-			elapsed_int := elapsed * 1000
-			elapsed_str := strconv.FormatFloat(elapsed_int, 'f', -1, 64)
-			io.WriteString(writer, elapsed_str)
-		})
-	*/
 
 	mux.HandleFunc("/query-tasks", func(writer http.ResponseWriter, request *http.Request) {
 
@@ -278,7 +213,8 @@ func main() {
 			if _, ok := us["search_lists"]; ok {
 				users := qu.(map[string]interface{})
 
-				var str1 string
+				//var str1 string
+				str1 := ""
 				str1 = fmt.Sprintf("%v", users)
 				fmt.Println("str", str1)
 
@@ -416,4 +352,3 @@ func main() {
 
 	http.ListenAndServe(":8080", mux)
 }
-
