@@ -89,15 +89,7 @@ func main() {
 	jsonData, _ := json.Marshal(lgn_struct)
 	jsonStr := []byte(jsonData)
 
-	/*
-		client := &http.Client{
-			CheckRedirect: func(req *http.Request, via []*http.Request) error {
-				return http.ErrUseLastResponse
-			}}
-	*/
 	/// FIRST REQUEST ///
-	fmt.Println(HttpQueryGet(urlPodft))
-
 	mux := http.NewServeMux()
 
 	/*
