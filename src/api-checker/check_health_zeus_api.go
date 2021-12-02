@@ -163,7 +163,9 @@ func main() {
 
 		start := time.Now()
 		getTime := HttpQueryGet(urlPodft)
-		fmt.Println(getTime)
+		if getTime != "" {
+			fmt.Println(0)
+		}
 		elapsed := time.Since(start).Seconds()
 		elapsed_int := elapsed * 1000
 		elapsed_str := strconv.FormatFloat(elapsed_int, 'f', -1, 64)
