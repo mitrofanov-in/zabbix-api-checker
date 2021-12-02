@@ -89,39 +89,8 @@ func main() {
 	jsonData, _ := json.Marshal(lgn_struct)
 	jsonStr := []byte(jsonData)
 
-	/// FIRST REQUEST ///
 	mux := http.NewServeMux()
-
-	/*
-		mux.HandleFunc("/login", func(writer http.ResponseWriter, request *http.Request) {
-
-			req_lgn, _ := http.NewRequest("POST", urlLogin, bytes.NewBuffer(jsonStr))
-			req_lgn.Header.Set("Content-Type", "application/json")
-			resp_lgn, err := client.Do(req_lgn)
-			if err != nil {
-				panic(err)
-			}
-			cookie = resp_lgn.Cookies()
-
-			for _, c := range cookie {
-				fmt.Println(c.Name, c.Value)
-			}
-
-			defer resp_lgn.Body.Close()
-
-			body_lgn, _ := ioutil.ReadAll(resp_lgn.Body)
-			bodyStatus_lgn := resp_lgn.StatusCode
-			fmt.Printf("%+v\n", string(body_lgn))
-
-			if bodyStatus_lgn == 201 {
-				io.WriteString(writer, "1")
-			} else {
-				io.WriteString(writer, "0")
-			}
-
-		})
-	*/
-
+	/// FIRST REQUEST ///
 	mux.HandleFunc("/login", func(writer http.ResponseWriter, request *http.Request) {
 
 		cookie = auth.HttpQueryPost(urlLogin, jsonStr)
