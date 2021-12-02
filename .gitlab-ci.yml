@@ -14,7 +14,7 @@ build-docker-image:
     - xco-awx
   script:
     - docker login -u admin -p ${REGISTRY_PASSWORD} http://${REGISTRY}
-    - docker image build . -f Dockerfile -t ${REGISTRY}/api-checker/api-checker:prod-$CI_PIPELINE_ID
+    - docker image build  --build-arg PASS_CHECKER=$PASS_CHECKER . -f Dockerfile -t ${REGISTRY}/api-checker/api-checker:prod-$CI_PIPELINE_ID
 
 deploy-container:
   stage: deploy-container
