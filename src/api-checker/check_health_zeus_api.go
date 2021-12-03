@@ -25,26 +25,26 @@ func HttpQueryGet(url string) string {
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			return http.ErrUseLastResponse
 		}}
-	req_podft, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		panic(err)
 	}
 	for i := range cookie {
-		req_podft.AddCookie(cookie[i])
+		req.AddCookie(cookie[i])
 	}
-	resp_podft, err := client.Do(req_podft)
+	resp, err := client.Do(req)
 	if err != nil {
 		panic(err)
 	}
-	defer resp_podft.Body.Close()
+	defer resp.Body.Close()
 
-	body_podft, err := ioutil.ReadAll(resp_podft.Body)
+	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		panic(err)
 	}
-	bodyStatus = resp_podft.StatusCode
+	bodyStatus = resp.StatusCode
 
-	return string(body_podft)
+	return string(body)
 }
 
 type Query struct {
@@ -196,19 +196,19 @@ func main() {
 			qu := us["search_lists"]
 			if _, ok := us["search_lists"]; ok {
 				users := qu.(map[string]interface{})
-
+				// TRANSFORM DATA
 				//var str1 string
 				str1 := ""
 				str1 = fmt.Sprintf("%v", users)
 				fmt.Println("str", str1)
 
 				reg, _ := regexp.Compile("[^0-9]+")
-				prcs := reg.ReplaceAllString(str1, "\n")
+				get_num := reg.ReplaceAllString(str1, "\n")
 
-				pr := strings.Split(prcs, "\n")
+				get_array := strings.Split(get_num, "\n")
 
 				rest := 0
-				for _, v := range pr {
+				for _, v := range get_array {
 					if v != "" {
 						v_int, _ := strconv.Atoi(v)
 						rest = rest + v_int
